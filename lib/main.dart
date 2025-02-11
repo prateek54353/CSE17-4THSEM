@@ -4,17 +4,17 @@ import 'dart:async';
 import 'dart:convert';
 
 void main() {
-  runApp(SheduleApp());
+  runApp(ScheduleApp());
 }
 
-class SheduleApp extends StatefulWidget {
-  const SheduleApp({super.key});
+class ScheduleApp extends StatefulWidget {
+  const ScheduleApp({super.key});
 
   @override
-  _SheduleAppState createState() => _SheduleAppState();
+  _ScheduleAppState createState() => _ScheduleAppState();
 }
 
-class _SheduleAppState extends State<SheduleApp> {
+class _ScheduleAppState extends State<ScheduleApp> {
   int _selectedIndex = 0;
   bool isDarkMode = true;
   DateTime? selectedDate;
@@ -34,20 +34,34 @@ class _SheduleAppState extends State<SheduleApp> {
   ThemeData _getTheme() {
     return isDarkMode
         ? ThemeData.dark().copyWith(
-            scaffoldBackgroundColor: Color(0xFF121212),
-            cardColor: Color(0xFF1E1E1E),
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            cardColor: const Color(0xFF1E1E1E),
           )
         : ThemeData.light();
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget body;
+    if (_selectedIndex == 0) {
+      body = DashboardScreen(onScheduleSelected: (DateTime date) {
+        setState(() {
+          _selectedIndex = 1;
+          selectedDate = date;
+        });
+      });
+    } else if (_selectedIndex == 1) {
+      body = ScheduleScreen(selectedDate: selectedDate ?? DateTime.now());
+    } else {
+      body = const Center(child: Text('Settings Screen'));
+    }
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: _getTheme(),
       home: Scaffold(
         appBar: AppBar(
-          title: Text("CSE 17"),
+          title: const Text("CSE 17"),
           backgroundColor: isDarkMode ? Colors.black54 : Colors.blue,
           actions: [
             IconButton(
@@ -56,21 +70,14 @@ class _SheduleAppState extends State<SheduleApp> {
             ),
           ],
         ),
-        body: _selectedIndex == 0
-            ? DashboardScreen(onScheduleSelected: (DateTime date) {
-                setState(() {
-                  _selectedIndex = 1;
-                  selectedDate = date;
-                });
-              })
-            : ScheduleScreen(selectedDate: selectedDate ?? DateTime.now()),
+        body: body,
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Colors.black,
           selectedItemColor: Colors.blue,
           unselectedItemColor: Colors.white70,
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          items: [
+          items: const [
             BottomNavigationBarItem(
                 icon: Icon(Icons.dashboard), label: 'Dashboard'),
             BottomNavigationBarItem(
@@ -103,8 +110,10 @@ class _CountdownWidgetState extends State<CountdownWidget> {
   void initState() {
     super.initState();
     _updateCountdown();
-    _timer =
-        Timer.periodic(Duration(seconds: 30), (timer) => _updateCountdown());
+    _timer = Timer.periodic(
+      const Duration(seconds: 30),
+      (timer) => _updateCountdown(),
+    );
   }
 
   @override
@@ -122,7 +131,6 @@ class _CountdownWidgetState extends State<CountdownWidget> {
     String? nextSubject;
     String? nextLocation;
 
-    // Check today's classes
     if (schedule.containsKey(today)) {
       final classes = schedule[today] as List;
       for (var cls in classes) {
@@ -138,7 +146,6 @@ class _CountdownWidgetState extends State<CountdownWidget> {
       }
     }
 
-    // If no class is found today, check upcoming days
     if (nextClassTime == null) {
       List<String> weekdays = [
         "Monday",
@@ -152,16 +159,15 @@ class _CountdownWidgetState extends State<CountdownWidget> {
       int todayIndex = weekdays.indexOf(today);
 
       for (int i = 1; i < 7; i++) {
-        // Check the next 6 days
         String nextDay = weekdays[(todayIndex + i) % 7];
         if (schedule.containsKey(nextDay)) {
           final classes = schedule[nextDay] as List;
-          var cls =
-              classes.first; // Take the first class of the next available day
+          var cls = classes.first;
           final classTime = DateFormat('HH:mm').parse(cls['time']);
-          nextClassTime = now
-              .add(Duration(days: i))
-              .copyWith(hour: classTime.hour, minute: classTime.minute);
+          // Instead of using copyWith (which doesn't exist for DateTime), create a new DateTime:
+          DateTime nextDayDate = now.add(Duration(days: i));
+          nextClassTime = DateTime(nextDayDate.year, nextDayDate.month,
+              nextDayDate.day, classTime.hour, classTime.minute);
           nextSubject = cls['subject'];
           nextLocation = cls['location'];
           break;
@@ -169,7 +175,6 @@ class _CountdownWidgetState extends State<CountdownWidget> {
       }
     }
 
-    // Update state
     if (nextClassTime != null) {
       final duration = nextClassTime.difference(now);
       final days = duration.inDays;
@@ -194,22 +199,22 @@ class _CountdownWidgetState extends State<CountdownWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.all(16),
-      color: Colors.white.withOpacity(0.9),
+      margin: const EdgeInsets.all(16),
+      color: Theme.of(context).cardColor,
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Next Class:",
+            const Text("Next Class:",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text(nextClass, style: TextStyle(fontSize: 20)),
+            const SizedBox(height: 8),
+            Text(nextClass, style: const TextStyle(fontSize: 20)),
             if (location.isNotEmpty)
-              Text("Location: $location", style: TextStyle(fontSize: 14)),
+              Text("Location: $location", style: const TextStyle(fontSize: 14)),
             if (countdown.isNotEmpty)
               Text(countdown,
-                  style: TextStyle(fontSize: 14, color: Colors.red)),
+                  style: const TextStyle(fontSize: 14, color: Colors.red)),
           ],
         ),
       ),
@@ -223,9 +228,8 @@ class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key, required this.onScheduleSelected});
 
   DateTime getNextWorkingDay() {
-    DateTime now = DateTime.now();
-    int currentWeekday = now.weekday;
-    return now.add(Duration(days: currentWeekday == 7 ? 1 : 1));
+    // For simplicity, tomorrow is always considered the next working day.
+    return DateTime.now().add(const Duration(days: 1));
   }
 
   @override
@@ -233,7 +237,6 @@ class DashboardScreen extends StatelessWidget {
     DateTime nextDay = getNextWorkingDay();
     String nextDayName = DateFormat('EEEE').format(nextDay);
 
-    // Example schedule JSON (Replace this with actual schedule data)
     String scheduleJson = jsonEncode({
       "Monday": [
         {"time": "11:00", "subject": "OS", "location": "WL 103"},
@@ -255,34 +258,17 @@ class DashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.all(12.0),
       child: Column(
         children: [
-          // Long Widget (Next Class Countdown)
           Expanded(
             flex: 2,
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: AssetImage(
-                      "assets/bgtilecountdown.jpg"), //  Background Image
-                  fit: BoxFit.cover,
-                ),
+                color: Theme.of(context).cardColor,
               ),
-              child: Card(
-                color: Colors.white.withOpacity(0.2), //  Slight Transparency
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16),
-                  child: CountdownWidget(scheduleJson: scheduleJson),
-                ),
-              ),
+              child: CountdownWidget(scheduleJson: scheduleJson),
             ),
           ),
-          SizedBox(height: 40),
-
-          // Grid Widgets
+          const SizedBox(height: 40),
           Expanded(
             flex: 3,
             child: GridView.count(
@@ -294,8 +280,8 @@ class DashboardScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                   child: Container(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
+                    padding: const EdgeInsets.all(16),
+                    child: const Center(
                         child: Text('Assignments',
                             style: TextStyle(fontSize: 18))),
                   ),
@@ -304,8 +290,8 @@ class DashboardScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                   child: Container(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
+                    padding: const EdgeInsets.all(16),
+                    child: const Center(
                         child: Text('Quizzes', style: TextStyle(fontSize: 18))),
                   ),
                 ),
@@ -315,12 +301,12 @@ class DashboardScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     child: Container(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       child: Center(
                         child: Text(
                           "Tomorrow's Schedule ($nextDayName)",
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18),
+                          style: const TextStyle(fontSize: 18),
                         ),
                       ),
                     ),
@@ -330,8 +316,8 @@ class DashboardScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                   child: Container(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
+                    padding: const EdgeInsets.all(16),
+                    child: const Center(
                         child: Text('Add New Task',
                             style: TextStyle(fontSize: 18))),
                   ),
@@ -354,7 +340,7 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  DateTime selectedDate = DateTime.now();
+  late DateTime selectedDate;
   final Map<String, List<String>> schedule = {
     'Monday': [
       'OS   (WL 103)   : 11AM TO 12 PM',
@@ -394,6 +380,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     ],
   };
 
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = widget.selectedDate;
+  }
+
   void _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -421,7 +413,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 "Today's Schedule",
                 style: TextStyle(
                   fontSize: 24,
@@ -429,12 +421,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.calendar_today),
+                icon: const Icon(Icons.calendar_today),
                 onPressed: () => _selectDate(context),
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
               itemCount: daySchedule.length,
@@ -458,9 +450,10 @@ class ScheduleCard extends StatelessWidget {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Text(title, style: TextStyle(fontSize: 18)),
+        padding: const EdgeInsets.all(16),
+        child: Text(title, style: const TextStyle(fontSize: 18)),
       ),
     );
   }
 }
+
