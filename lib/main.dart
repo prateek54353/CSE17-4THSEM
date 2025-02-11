@@ -195,7 +195,7 @@ class _CountdownWidgetState extends State<CountdownWidget> {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.all(16),
-      color: Colors.white.withOpacity(0.3),
+      color: Colors.white.withOpacity(0.9),
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
