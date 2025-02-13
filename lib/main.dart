@@ -251,6 +251,29 @@ class DashboardScreen extends StatelessWidget {
         {"time": "13:00", "subject": "VT", "location": "-N.A-"},
         {"time": "15:00", "subject": "OS", "location": "LH 206"},
         {"time": "16:00", "subject": "DM", "location": "LH 206"}
+      ],
+      "Wednesday": [
+        {"time": "11:00", "subject": "DM", "location": "LH 208"},
+        {"time": "12:00", "subject": "COA", "location": "LH 208"},
+        {"time": "13:00", "subject": "OOPJ", "location": "LH 208"},
+        {"time": "15:00", "subject": "DBMS", "location": "LH 303"},
+        {"time": "16:00", "subject": "OOPJ(L)", "location": "WL 202"}
+      ],
+      "Thursday": [
+        {"time": "11:00", "subject": "OOPJ", "location": "LH 205"},
+        {"time": "12:00", "subject": "DM", "location": "LH 205"},
+        {"time": "13:00", "subject": "OB", "location": "LH 205"},
+        {"time": "15:00", "subject": "OS", "location": "LH 201"},
+        {"time": "16:00", "subject": "DBMS", "location": "LH 201"},
+        {"time": "17:00", "subject": "COA", "location": "LH 201"}
+      ],
+      "Friday": [
+        {"time": "09:00", "subject": "OB", "location": "LH 303"},
+        {"time": "10:00", "subject": "OOPJ", "location": "LH 303"},
+        {"time": "14:00", "subject": "DBMS(L)", "location": "WL 101"},
+        {"time": "15:00", "subject": "DBMS(L)", "location": "WL 101"},
+        {"time": "16:00", "subject": "COA", "location": "LH 201"},
+        {"time": "17:00", "subject": "DBMS", "location": "LH 201"}
       ]
     });
 
@@ -456,4 +479,3 @@ class ScheduleCard extends StatelessWidget {
     );
   }
 }
-
